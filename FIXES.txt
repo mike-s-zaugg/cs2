@@ -1,0 +1,81 @@
+// ============================================================================
+// FEHLER-ÜBERSICHT UND KORREKTIONEN
+// ============================================================================
+
+// 1. MEMORY.CPP - KRITISCHE FEHLER
+// ❌ FEHLER: return *(uintptr_t)buffer;  <- Cast auf falschen Typ!
+// ✓ FIX: return *(uintptr_t*)buffer;     <- Pointer dereferenzieren
+
+// ❌ FEHLER: szModPath für Modülnamen verwenden
+// ✓ FIX: szModule für Modülnamen verwenden
+
+// ❌ FEHLER: Kein Error Handling bei NULL
+// ✓ FIX: Null checks überall
+
+// ============================================================================
+
+// 2. AIMBOT.CPP
+// ❌ FEHLER: minDist wird nicht aktualisiert in Loop
+//     if (dist < minDist && dist > 5.0f) {
+//         bestTarget = targetPos;
+//         foundTarget = true;
+//         break;  <- Bricht sofort ab!
+//     }
+// ✓ FIX: 
+//     if (dist < minDist && dist > 5.0f) {
+//         bestTarget = targetPos;
+//         minDist = dist;         <- WICHTIG!
+//         foundTarget = true;
+//     }
+
+// ❌ FEHLER: HMODULE zu uintptr_t Casting
+// ✓ FIX: (uintptr_t)m_hClient + OFFSET_...
+
+// ❌ FEHLER: ReadProcessMemory ohne zu speichern
+// ✓ FIX: Direkter Speicher write statt Read
+
+// ============================================================================
+
+// 3. ESP.CPP
+// ❌ FEHLER: Fehlende #include <vector>
+// ✓ FIX: #include <vector> hinzugefügt
+
+// ❌ FEHLER: m_players nie geleert -> duplizierte Einträge
+// ✓ FIX: m_players.clear() im Update()
+
+// ❌ FEHLER: player.origin wird nicht gesetzt
+// ✓ FIX: player.origin = *(Vector*)(entity + 0x134);
+
+// ❌ FEHLER: memcpy ohne Bounds checking
+// ✓ FIX: memcpy_s() mit sizeof() und Null-Termination
+
+// ❌ FEHLER: Division by zero möglich
+// ✓ FIX: if (maxHealth <= 0) return;
+
+// ============================================================================
+
+// 4. TRIGGERBOT.CPP
+// ❌ FEHLER: IsTargetInCrosshair() erhält Angles statt Position
+// ✓ FIX: GetLocalPlayerOrigin() übergeben
+
+// ❌ FEHLER: delay_ms wird nicht korrekt konvertiert
+//     if ((currentTime - lastFireTime) > config.delay_ms)
+//     currentTime ist in Sekunden, delay_ms in Millisekunden!
+// ✓ FIX: if ((currentTime - lastFireTime) > (config.delay_ms / 1000.0f))
+
+// ❌ FEHLER: GetTargetBone() Private aber wird aufgerufen
+// ✓ FIX: Private Deklaration im Header hinzugefügt
+
+// ============================================================================
+
+// 5. MAIN.CPP
+// ❌ FEHLER: GetModuleBase() returnt DWORD, aber HMODULE erwartet
+// ✓ FIX: (HMODULE) casting hinzugefügt
+
+// ❌ FEHLER: MessageLoop wird nicht benötigt für Cheat
+// ✓ FIX: Simple while(running) Loop mit Sleep()
+
+// ============================================================================
+
+// COMPILATION FLAGS:
+// g++ -std=c++17 -luser32 -lkernel32 -lpsapi -ltlhelp32 *.cpp -o cheat.exe

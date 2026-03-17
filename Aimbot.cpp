@@ -13,13 +13,17 @@ Aimbot::Aimbot(HMODULE hClient, HMODULE hEngine)
 
 void Aimbot::Update() {
     if (!config.enabled) return;
+    if (!m_hClient) return; // FIX: Null check
 
-    uintptr_t localPlayerPtr = Memory::ReadMemory(m_hClient + OFFSET_LOCAL_PLAYER, sizeof(uintptr_t));
-    Vector localOrigin = GetLocalPlayerOrigin();
+    uintptr_t localPlayerPtr = Memory::ReadMemory((uintptr_t)m_hClient + OFFSET_LOCAL_PLAYER, sizeof(uintptr_t));
+    if (!localPlayerPtr) return; // FIX: Error handling
     
+    Vector localOrigin = GetLocalPlayerOrigin();
     Matrix3x4 viewMatrix = GetViewMatrix();
 
-    uintptr_t entityList = Memory::ReadMemory(m_hClient + OFFSET_ENTITY_LIST, sizeof(uintptr_t));
+    uintptr_t entityList = Memory::ReadMemory((uintptr_t)m_hClient + OFFSET_ENTITY_LIST, sizeof(uintptr_t));
+    if (!entityList) return; // FIX: Null check
+    
     Vector bestTarget = {0, 0, 0};
     float minDist = config.fov; 
     bool foundTarget = false;
@@ -30,7 +34,7 @@ void Aimbot::Update() {
         if (!entityPtr) continue;
 
         int team = *(int*)(entityPtr + 0x10); 
-        if (team == 2) continue; 
+        if (team == 2) continue; // Skip eigenes Team
 
         Vector targetPos = GetTargetBone(i, config.targetBone);
         
@@ -40,10 +44,11 @@ void Aimbot::Update() {
             pow(targetPos.z - localOrigin.z, 2)
         );
 
+        // FIX: minDist muss aktualisiert werden um besten Target zu finden
         if (dist < minDist && dist > 5.0f) {
             bestTarget = targetPos;
+            minDist = dist; // FIX: Update minDist!
             foundTarget = true;
-            break;
         }
     }
 
@@ -58,21 +63,28 @@ void Aimbot::Update() {
 }
 
 Vector Aimbot::GetLocalPlayerOrigin() {
-    uintptr_t localPawn = Memory::ReadMemory(m_hClient + OFFSET_PAWN, sizeof(uintptr_t));
+    uintptr_t localPawn = Memory::ReadMemory((uintptr_t)m_hClient + OFFSET_PAWN, sizeof(uintptr_t));
+    if (!localPawn) return {0, 0, 0}; // FIX: Safe default
+    
     return *(Vector*)(localPawn + 0x134);
 }
 
 Matrix3x4 Aimbot::GetViewMatrix() {
-    Matrix3x4 matrix;
-    uintptr_t viewMatPtr = Memory::ReadMemory(m_hClient + OFFSET_VIEW_MATRIX, sizeof(uintptr_t));
+    Matrix3x4 matrix = {};
+    uintptr_t viewMatPtr = Memory::ReadMemory((uintptr_t)m_hClient + OFFSET_VIEW_MATRIX, sizeof(uintptr_t));
     
-    memcpy(&matrix.matrix, (float*)(viewMatPtr), sizeof(matrix.matrix));
+    if (viewMatPtr) {
+        memcpy(&matrix.matrix, (float*)(viewMatPtr), sizeof(matrix.matrix));
+    }
     return matrix;
 }
 
 Vector Aimbot::GetTargetBone(int entityId, int boneIndex) {
-    uintptr_t entityList = Memory::ReadMemory(m_hClient + OFFSET_ENTITY_LIST, sizeof(uintptr_t));
+    uintptr_t entityList = Memory::ReadMemory((uintptr_t)m_hClient + OFFSET_ENTITY_LIST, sizeof(uintptr_t));
+    if (!entityList) return {0, 0, 0}; // FIX: Null check
+    
     uintptr_t entityPtr = Memory::ReadMemory(entityList + (entityId * sizeof(uintptr_t)), sizeof(uintptr_t));
+    if (!entityPtr) return {0, 0, 0}; // FIX: Null check
     
     Vector origin = *(Vector*)(entityPtr + 0x134); 
     
@@ -93,17 +105,18 @@ Vector Aimbot::CalculateAngle(Vector src, Vector dst) {
 }
 
 void Aimbot::ApplySilentAim(Vector angle) {
-    uintptr_t viewAnglesPtr = Memory::ReadMemory(m_hClient + OFFSET_VIEW_ANGLES, sizeof(uintptr_t));
+    uintptr_t viewAnglesPtr = Memory::ReadMemory((uintptr_t)m_hClient + OFFSET_VIEW_ANGLES, sizeof(uintptr_t));
+    if (!viewAnglesPtr) return; // FIX: Null check
     
-    float currentAngles[2];
-    ReadProcessMemory(GetCurrentProcess(), (LPCVOID)viewAnglesPtr, &currentAngles, 8, NULL);
-    
-    *(float*)(viewAnglesPtr + 0x4) = angle.y; 
+    // FIX: Direkter write statt ReadProcessMemory
     *(float*)(viewAnglesPtr + 0x0) = angle.x;
+    *(float*)(viewAnglesPtr + 0x4) = angle.y; 
 }
 
 void Aimbot::ApplyRCS() {
-    uintptr_t viewAnglesPtr = Memory::ReadMemory(m_hClient + OFFSET_VIEW_ANGLES, sizeof(uintptr_t));
+    uintptr_t viewAnglesPtr = Memory::ReadMemory((uintptr_t)m_hClient + OFFSET_VIEW_ANGLES, sizeof(uintptr_t));
+    if (!viewAnglesPtr) return; // FIX: Null check
     
     float recoilScale = 2.0f;
+    // TODO: Implementierung
 }
