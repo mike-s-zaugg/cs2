@@ -18,7 +18,7 @@ IDXGISwapChain* pSwapChain = nullptr;
 ID3D11RenderTargetView* mainRenderTargetView = nullptr;
 
 int main() {
-    // FIX: Modul-Strings korrigiert (szModule nicht szModPath)
+    // FIX: Direkt zu HMODULE casten da GetModuleBase jetzt uintptr_t returnt
     hClient = (HMODULE)Memory::GetModuleBase("client.dll");
     hEngine = (HMODULE)Memory::GetModuleBase("engine2.dll");
 

@@ -19,7 +19,6 @@ void Aimbot::Update() {
     if (!localPlayerPtr) return; // FIX: Error handling
     
     Vector localOrigin = GetLocalPlayerOrigin();
-    Matrix3x4 viewMatrix = GetViewMatrix();
 
     uintptr_t entityList = Memory::ReadMemory((uintptr_t)m_hClient + OFFSET_ENTITY_LIST, sizeof(uintptr_t));
     if (!entityList) return; // FIX: Null check
@@ -117,6 +116,6 @@ void Aimbot::ApplyRCS() {
     uintptr_t viewAnglesPtr = Memory::ReadMemory((uintptr_t)m_hClient + OFFSET_VIEW_ANGLES, sizeof(uintptr_t));
     if (!viewAnglesPtr) return; // FIX: Null check
     
-    float recoilScale = 2.0f;
-    // TODO: Implementierung
+    // TODO: RCS Implementierung - würde Recoil-Compensation berechnen
+    // float recoilScale = 2.0f;
 }

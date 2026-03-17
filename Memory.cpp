@@ -30,8 +30,9 @@ void Memory::WriteMemory(uintptr_t address, const void* data, size_t size) {
 }
 
 // FIX: Richtige Modul-Suche mit szModName statt szModPath
-DWORD Memory::GetModuleBase(const char* moduleName) {
-    MODULEENTRY32 me32 = {0};
+uintptr_t Memory::GetModuleBase(const char* moduleName) {
+    MODULEENTRY32 me32;
+    ZeroMemory(&me32, sizeof(MODULEENTRY32));  // FIX: Alle Felder initialisieren
     me32.dwSize = sizeof(MODULEENTRY32);
     HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
     
@@ -42,7 +43,7 @@ DWORD Memory::GetModuleBase(const char* moduleName) {
             // FIX: Vergleich mit szModName (Modulname) nicht szModPath (voller Pfad)
             if (!_stricmp(me32.szModule, moduleName)) {
                 CloseHandle(hSnap);
-                return (DWORD)me32.hModule;
+                return (uintptr_t)me32.hModule;
             }
         } while (Module32Next(hSnap, &me32));
     }

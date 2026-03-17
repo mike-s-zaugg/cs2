@@ -15,10 +15,14 @@ public:
     Triggerbot(HMODULE hClient);
     void Update();
     void FireWeapon();
-    bool IsTargetInCrosshair(Vector aimAngle);
+    bool IsTargetInCrosshair(Vector playerOrigin);
 
 private:
     HMODULE m_hClient;
     TriggerConfig config;
     float lastFireTime = 0.0f;
+    
+    Vector GetLocalPlayerOrigin();
+    Vector GetViewAngles();
+    Vector GetTargetBone(int entityId, int boneIndex);
 };

@@ -20,8 +20,7 @@ void Triggerbot::Update() {
 
         if ((currentTime - lastFireTime) > (config.delay_ms / 1000.0f)) { // FIX: ms zu s konvertieren
             
-            Vector localOrigin = GetLocalPlayerOrigin();
-            Vector viewAngles = GetViewAngles();
+            Vector localOrigin = this->GetLocalPlayerOrigin();
             
             if (IsTargetInCrosshair(localOrigin)) { // FIX: localOrigin übergeben, nicht viewAngles
                 FireWeapon();
@@ -65,7 +64,7 @@ bool Triggerbot::IsTargetInCrosshair(Vector viewOrigin) {
         int team = *(int*)(entityPtr + 0x10); 
         if (team == 2) continue; // Skip eigenes Team
 
-        Vector targetPos = GetTargetBone(i, 0);
+        Vector targetPos = this->GetTargetBone(i, 0);
         
         // FIX: Richtige Distanzberechnung von Position zu Position
         float dist = std::sqrt(
