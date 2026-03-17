@@ -1,12 +1,12 @@
 #pragma once
 #include <D3D11.h>
+#include "Vector.h"
 #include "Memory.h"
 
 struct PlayerInfo {
     int health = 100;
-    int team = 2; // CT=2, T=3
+    int team = 2;
     Vector origin = {0, 0, 0};
-    Vector aimPunch = {0, 0, 0};
     char name[64] = "";
     bool visible = false;
 };
